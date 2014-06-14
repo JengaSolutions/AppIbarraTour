@@ -7,30 +7,33 @@ function DataManager(root, archivo, data, url) {
 	this.init = function() {
 		// window.requestFileSystem = window.requestFileSystem ||
 		// window.webkitRequestFileSystem
-		if (!(url === undefined)) {
-			var xmlhttp;
-			if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome,
-				// Opera, Safari
-				xmlhttp = new XMLHttpRequest();
-			} else {// code for IE6, IE5
-				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-			}
-			xmlhttp.onreadystatechange = function() {
-				alert(xmlhttp.statusText + " - " + xmlhttp.status + " - "
-						+ xmlhttp.readyState);
-				if (xmlhttp.readyState == 4 && (xmlhttp.status == 200||xmlhttp.status == 0)) {
-					data = xmlhttp.responseText;
-					alert("Datos obtenidos " + data);
+			if (!(url === undefined) && navigator.onLine ) {
+				
+				var xmlhttp;
+				if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome,
+					// Opera, Safari
+					xmlhttp = new XMLHttpRequest();
+				} else {// code for IE6, IE5
+					xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 				}
-			}
-
-			xmlhttp.onprogress = function(evt) {
-				$(pg).html(evt.loaded / evt.total * 100);
-			};
-			xmlhttp.open("GET", url, true);
-			xmlhttp.send();
-			alert("AJAX ENVIADO");
+				xmlhttp.onreadystatechange = function() {
+					alert(xmlhttp.statusText + " - " + xmlhttp.status + " - "
+							+ xmlhttp.readyState);
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+						data = xmlhttp.responseText;
+						alert("Datos obtenidos " + data);
+					}
+				}
+	
+				xmlhttp.onprogress = function(evt) {
+					$(pg).html(evt.loaded / evt.total * 100);
+				};
+				xmlhttp.open("GET", url, true);
+				xmlhttp.send();
+				alert("AJAX ENVIADO");
 		}
+			else if(!(url === undefined) && !navigator.onLine)
+				alert("No hay conexión a internet.")
 		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, getFS, fail);
 
 	}
@@ -46,7 +49,7 @@ function DataManager(root, archivo, data, url) {
 	}
 	// obtener archivo
 	function getFileEntry(fileSystem) {
-		func = (data === undefined) ? getFileR : getFileW;
+		func = (typeof(data) == "function") ? getFileR : getFileW;
 		fileEntry = fileSystem;
 		fileEntry.getFile(archivo, {
 			create : true,
@@ -70,18 +73,21 @@ function DataManager(root, archivo, data, url) {
 
 	}
 	function getReader(file) {
-		alert("LE");
+		alert("LE"+file);
 		reader = new FileReader();
 		reader.onerror = function(e) {
-			alert(e.message)
+			alert(e.message);
 		}
 		reader.onloadend = function(evt) {
-			alert("Read as text");
+			//lectura = evt.target.result;
 			alert(evt.target.result);
+			data(evt.target.result);
 		};
 
 		reader.readAsText(file);
 	}
+	
+	
 
 }
 
